@@ -1,0 +1,7 @@
+spring:
+  application:
+    name: inventario-api
+  jpa:
+    hibernate:
+      ddl-auto: validate     # Hibernate solo verifica; las tablas las crea Flyway
+    open-in-view: false
