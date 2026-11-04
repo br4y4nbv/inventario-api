@@ -1,0 +1,28 @@
+@host = http://localhost:8080
+
+### Crear producto
+POST {{host}}/api/productos
+Content-Type: application/json
+
+{"sku": "TEC-001", "nombre": "Teclado mecánico", "precio": 89900.00, "stockMinimo": 5}
+
+### Listar (con búsqueda y paginación)
+GET {{host}}/api/productos?q=teclado&page=0&size=10
+
+### Obtener por id
+GET {{host}}/api/productos/1
+
+### Actualizar
+PUT {{host}}/api/productos/1
+Content-Type: application/json
+
+{"nombre": "Teclado mecánico RGB", "precio": 99900.00, "stockMinimo": 3}
+
+### Desactivar
+DELETE {{host}}/api/productos/1
+
+### Provocar errores de validación
+POST {{host}}/api/productos
+Content-Type: application/json
+
+{"sku": "", "nombre": "", "precio": -1, "stockMinimo": -1}
