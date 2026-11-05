@@ -69,4 +69,9 @@ public class ProductoService {
         return productoRepository.findById(id)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Producto " + id + " no encontrado"));
     }
+
+    @Transactional(readOnly = true)
+    public Page<ProductoResponse> listarStockBajo(Pageable pageable) {
+        return productoRepository.findStockBajo(pageable).map(ProductoResponse::de);
+    }
 }

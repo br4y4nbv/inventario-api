@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -54,5 +55,13 @@ public class ManejadorGlobalErrores extends ResponseEntityExceptionHandler {
         problema.setTitle("Datos inválidos");
         problema.setProperty("errores", errores);
         return handleExceptionInternal(ex, problema, headers, HttpStatus.BAD_REQUEST, request);
+    }
+
+    // Dos operaciones modificaron el mismo producto a la vez: la perdedora recibe 409
+    // y el cliente puede reintentar con el stock ya actualizado.
+    @ExceptionHandler(OptimisticLockingFailureException.class)
+    ProblemDetail concurrencia(OptimisticLockingFailureException ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT,
+                "El producto fue modificado por otra operación al mismo tiempo. Vuelve a intentarlo");
     }
 }

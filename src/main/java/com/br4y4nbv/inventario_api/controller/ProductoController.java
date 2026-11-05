@@ -52,6 +52,14 @@ public class ProductoController {
         return new PagedModel<>(productoService.listar(q, activo, pageable));
     }
 
+    // GET /api/productos/stock-bajo: productos que llegaron a su stock mínimo
+    @GetMapping("/stock-bajo")
+    public PagedModel<ProductoResponse> stockBajo(@RequestParam(defaultValue = "0") int page,
+                                                @RequestParam(defaultValue = "20") int size) {
+        var pageable = PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), 100), Sort.by("nombre"));
+        return new PagedModel<>(productoService.listarStockBajo(pageable));
+    }
+
     @PutMapping("/{id}")
     public ProductoResponse actualizar(@PathVariable Long id,
                                        @Valid @RequestBody ProductoActualizacion datos) {
