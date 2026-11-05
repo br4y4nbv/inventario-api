@@ -26,3 +26,27 @@ POST {{host}}/api/productos
 Content-Type: application/json
 
 {"sku": "", "nombre": "", "precio": -1, "stockMinimo": -1}
+
+### Entrada de stock
+POST {{host}}/api/productos/1/movimientos
+Content-Type: application/json
+
+{"tipo": "ENTRADA", "cantidad": 20, "motivo": "Compra a proveedor"}
+
+### Salida
+POST {{host}}/api/productos/1/movimientos
+Content-Type: application/json
+
+{"tipo": "SALIDA", "cantidad": 3, "motivo": "Venta"}
+
+### Ajuste negativo (merma)
+POST {{host}}/api/productos/1/movimientos
+Content-Type: application/json
+
+{"tipo": "AJUSTE", "cantidad": -2, "motivo": "Producto dañado"}
+
+### Historial del producto
+GET {{host}}/api/productos/1/movimientos
+
+### Productos con stock bajo
+GET {{host}}/api/productos/stock-bajo
