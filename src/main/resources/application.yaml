@@ -3,5 +3,15 @@ spring:
     name: inventario-api
   jpa:
     hibernate:
-      ddl-auto: validate     # Hibernate solo verifica; las tablas las crea Flyway
+      ddl-auto: validate
     open-in-view: false
+
+app:
+  jwt:
+    # Clave de firma HS256 (mínimo 32 caracteres). Llega por variable de entorno
+    secret: ${JWT_SECRET:}
+    expiracion-minutos: 60
+  admin:
+    # Administrador inicial: solo se crea si ambas variables están definidas
+    email: ${ADMIN_EMAIL:}
+    password: ${ADMIN_PASSWORD:}

@@ -11,6 +11,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import java.util.LinkedHashMap;
@@ -63,5 +64,11 @@ public class ManejadorGlobalErrores extends ResponseEntityExceptionHandler {
     ProblemDetail concurrencia(OptimisticLockingFailureException ex) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT,
                 "El producto fue modificado por otra operación al mismo tiempo. Vuelve a intentarlo");
+    }
+
+    // Login fallido (o token válido de un usuario que ya no existe): 401 con el formato estándar
+    @ExceptionHandler(BadCredentialsException.class)
+    ProblemDetail credenciales(BadCredentialsException ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, ex.getMessage());
     }
 }

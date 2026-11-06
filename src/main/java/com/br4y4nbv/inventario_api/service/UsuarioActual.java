@@ -1,28 +1,27 @@
 package com.br4y4nbv.inventario_api.service;
 
-import com.br4y4nbv.inventario_api.model.Rol;
 import com.br4y4nbv.inventario_api.model.Usuario;
 import com.br4y4nbv.inventario_api.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
-// TEMPORAL
-// Mientras tanto, todos los movimientos se atribuyen a un usuario "sistema".
+// Devuelve el usuario de la petición actual a partir del JWT ya verificado por Spring Security.
 @Component
 @RequiredArgsConstructor
 public class UsuarioActual {
 
-    public static final String EMAIL_TEMPORAL = "sistema@inventario.local";
-
     private final UsuarioRepository usuarioRepository;
 
     public Usuario obtener() {
-        return usuarioRepository.findByEmail(EMAIL_TEMPORAL)
-                .orElseGet(() -> usuarioRepository.save(Usuario.builder()
-                        .nombre("Sistema")
-                        .email(EMAIL_TEMPORAL)
-                        .password("sin-acceso")   // no es un hash válido: este usuario no puede iniciar sesión
-                        .rol(Rol.ADMIN)
-                        .build()));
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
+            throw new BadCredentialsException("No hay un usuario autenticado");
+        }
+        // getName() es el "sub" del token: el correo
+        return usuarioRepository.findByEmail(auth.getName())
+                .orElseThrow(() -> new BadCredentialsException("El usuario del token ya no existe"));
     }
 }

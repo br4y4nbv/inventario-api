@@ -1,0 +1,6 @@
+app:
+  jwt:
+    secret: clave-solo-para-desarrollo-local-no-usar-en-produccion-0123456789
+  admin:
+    email: admin@inventario.local
+    password: Admin12345!
