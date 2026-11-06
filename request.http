@@ -1,52 +1,141 @@
 @host = http://localhost:8080
 
-### Crear producto
+### Registrar un usuario (siempre rol USER)
+POST {{host}}/api/auth/registro
+Content-Type: application/json
+
+{"nombre": "Ana Pérez", "email": "ana@test.com", "password": "clave12345"}
+
+### Login como administrador
+# @name loginAdmin
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{"email": "admin@inventario.local", "password": "Admin12345!"}
+
+###
+@tokenAdmin = {{loginAdmin.response.body.accessToken}}
+
+### Login como usuario normal
+# @name loginUser
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{"email": "ana@test.com", "password": "clave12345"}
+
+###
+@tokenUser = {{loginUser.response.body.accessToken}}
+
+### Quién soy
+GET {{host}}/api/auth/yo
+Authorization: Bearer {{tokenUser}}
+
+### Sin token: debe dar 401
+GET {{host}}/api/productos
+
+### Crear producto (ADMIN)
 POST {{host}}/api/productos
+Authorization: Bearer {{tokenAdmin}}
 Content-Type: application/json
 
 {"sku": "TEC-001", "nombre": "Teclado mecánico", "precio": 89900.00, "stockMinimo": 5}
 
-### Listar (con búsqueda y paginación)
-GET {{host}}/api/productos?q=teclado&page=0&size=10
-
-### Obtener por id
-GET {{host}}/api/productos/1
-
-### Actualizar
-PUT {{host}}/api/productos/1
-Content-Type: application/json
-
-{"nombre": "Teclado mecánico RGB", "precio": 99900.00, "stockMinimo": 3}
-
-### Desactivar
-DELETE {{host}}/api/productos/1
-
-### Provocar errores de validación
+### Crear producto como USER: debe dar 403
 POST {{host}}/api/productos
+Authorization: Bearer {{tokenUser}}
 Content-Type: application/json
 
-{"sku": "", "nombre": "", "precio": -1, "stockMinimo": -1}
+{"sku": "TEC-002", "nombre": "Mouse", "precio": 50000.00, "stockMinimo": 5}
 
-### Entrada de stock
+### Listar (cualquier usuario autenticado)
+GET {{host}}/api/productos?q=teclado
+Authorization: Bearer {{tokenUser}}
+
+### Entrada de stock (USER o ADMIN)
 POST {{host}}/api/productos/1/movimientos
+Authorization: Bearer {{tokenUser}}
 Content-Type: application/json
 
 {"tipo": "ENTRADA", "cantidad": 20, "motivo": "Compra a proveedor"}
 
-### Salida
-POST {{host}}/api/productos/1/movimientos
-Content-Type: application/json
-
-{"tipo": "SALIDA", "cantidad": 3, "motivo": "Venta"}
-
-### Ajuste negativo (merma)
-POST {{host}}/api/productos/1/movimientos
-Content-Type: application/json
-
-{"tipo": "AJUSTE", "cantidad": -2, "motivo": "Producto dañado"}
-
-### Historial del producto
+### Historial
 GET {{host}}/api/productos/1/movimientos
+Authorization: Bearer {{tokenUser}}
 
-### Productos con stock bajo
+### Stock bajo
 GET {{host}}/api/productos/stock-bajo
+Authorization: Bearer {{tokenUser}}
+
+### Desactivar producto (solo ADMIN)
+DELETE {{host}}/api/productos/1
+Authorization: Bearer {{tokenAdmin}}@host = http://localhost:8080
+
+### Registrar un usuario (siempre rol USER)
+POST {{host}}/api/auth/registro
+Content-Type: application/json
+
+{"nombre": "Ana Pérez", "email": "ana@test.com", "password": "clave12345"}
+
+### Login como administrador
+# @name loginAdmin
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{"email": "admin@inventario.local", "password": "Admin12345!"}
+
+###
+@tokenAdmin = {{loginAdmin.response.body.accessToken}}
+
+### Login como usuario normal
+# @name loginUser
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{"email": "ana@test.com", "password": "clave12345"}
+
+###
+@tokenUser = {{loginUser.response.body.accessToken}}
+
+### Quién soy
+GET {{host}}/api/auth/yo
+Authorization: Bearer {{tokenUser}}
+
+### Sin token: debe dar 401
+GET {{host}}/api/productos
+
+### Crear producto (ADMIN)
+POST {{host}}/api/productos
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: application/json
+
+{"sku": "TEC-001", "nombre": "Teclado mecánico", "precio": 89900.00, "stockMinimo": 5}
+
+### Crear producto como USER: debe dar 403
+POST {{host}}/api/productos
+Authorization: Bearer {{tokenUser}}
+Content-Type: application/json
+
+{"sku": "TEC-002", "nombre": "Mouse", "precio": 50000.00, "stockMinimo": 5}
+
+### Listar (cualquier usuario autenticado)
+GET {{host}}/api/productos?q=teclado
+Authorization: Bearer {{tokenUser}}
+
+### Entrada de stock (USER o ADMIN)
+POST {{host}}/api/productos/1/movimientos
+Authorization: Bearer {{tokenUser}}
+Content-Type: application/json
+
+{"tipo": "ENTRADA", "cantidad": 20, "motivo": "Compra a proveedor"}
+
+### Historial
+GET {{host}}/api/productos/1/movimientos
+Authorization: Bearer {{tokenUser}}
+
+### Stock bajo
+GET {{host}}/api/productos/stock-bajo
+Authorization: Bearer {{tokenUser}}
+
+### Desactivar producto (solo ADMIN)
+DELETE {{host}}/api/productos/1
+Authorization: Bearer {{tokenAdmin}}
