@@ -13,6 +13,8 @@ import com.br4y4nbv.inventario_api.repository.UsuarioRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.security.authentication.TestingAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
@@ -28,6 +30,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest
 @Import(TestcontainersConfiguration.class)
 class ConcurrenciaStockTest {
+    private static final String EMAIL = "ventas@test.com";
 
     private static final int HILOS = 8;   // menos que las 10 conexiones del pool por defecto
 
@@ -39,9 +42,8 @@ class ConcurrenciaStockTest {
     @BeforeEach
     void preparar() {
         limpiar();
-        // El usuario temporal se crea antes para que los hilos no compitan por crearlo
-        usuarioRepository.save(Usuario.builder().nombre("Sistema")
-                .email(UsuarioActual.EMAIL_TEMPORAL).password("x").rol(Rol.ADMIN).build());
+        usuarioRepository.save(Usuario.builder().nombre("Ventas")
+                .email(EMAIL).password("x").rol(Rol.ADMIN).build());    
     }
 
     @AfterEach
@@ -69,12 +71,17 @@ class ConcurrenciaStockTest {
             resultados.add(pool.submit(() -> {
                 listos.countDown();
                 salida.await();          // todos esperan la señal para competir de verdad
-                try {
+                // Cada hilo simula a un usuario autenticado
+                SecurityContextHolder.getContext().setAuthentication(
+                        new TestingAuthenticationToken(EMAIL, null, "ROLE_ADMIN"));                
+                        try {
                     movimientoService.registrar(productoId,
                             new MovimientoRequest(TipoMovimiento.SALIDA, 1, "venta"));
                     return true;
                 } catch (ConflictoException | OptimisticLockingFailureException e) {
                     return false;
+                } finally {
+                    SecurityContextHolder.clearContext();
                 }
             }));
         }

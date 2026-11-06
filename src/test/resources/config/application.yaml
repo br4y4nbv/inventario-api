@@ -1,0 +1,3 @@
+app:
+  jwt:
+    secret: clave-de-pruebas-que-supera-los-32-caracteres-0123456789

@@ -9,6 +9,11 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+import com.br4y4nbv.inventario_api.model.Rol;
+import com.br4y4nbv.inventario_api.model.Usuario;
+import com.br4y4nbv.inventario_api.repository.UsuarioRepository;
+import org.junit.jupiter.api.BeforeEach;
+import org.springframework.security.test.context.support.WithMockUser;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -17,9 +22,18 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Import(TestcontainersConfiguration.class)
 @Transactional
+@WithMockUser(username = "admin@test.com", roles = "ADMIN")
 class MovimientoControllerTest {
 
     @Autowired MockMvc mockMvc;
+    @Autowired UsuarioRepository usuarioRepository;
+
+    // El usuario del token debe existir en la base: UsuarioActual lo busca por correo
+    @BeforeEach
+    void crearUsuario() {
+        usuarioRepository.save(Usuario.builder().nombre("Admin Test")
+                .email("admin@test.com").password("x").rol(Rol.ADMIN).build());
+    }
 
     // Crea un producto (stock 0, mínimo 5) y devuelve su URL
     private String crearProducto(String sku) throws Exception {
