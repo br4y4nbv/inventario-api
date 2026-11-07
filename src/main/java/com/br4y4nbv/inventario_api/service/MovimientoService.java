@@ -8,6 +8,9 @@ import com.br4y4nbv.inventario_api.model.Movimiento;
 import com.br4y4nbv.inventario_api.model.Producto;
 import com.br4y4nbv.inventario_api.repository.MovimientoRepository;
 import com.br4y4nbv.inventario_api.repository.ProductoRepository;
+import com.br4y4nbv.inventario_api.dto.MovimientoFiltro;
+import com.br4y4nbv.inventario_api.repository.MovimientoSpecs;
+import com.br4y4nbv.inventario_api.exception.PeticionInvalidaException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -69,11 +72,14 @@ public class MovimientoService {
     }
 
     @Transactional(readOnly = true)
-    public Page<MovimientoResponse> historial(Long productoId, Pageable pageable) {
+    public Page<MovimientoResponse> historial(Long productoId, MovimientoFiltro filtro, Pageable pageable) {
         if (!productoRepository.existsById(productoId)) {
             throw new RecursoNoEncontradoException("Producto " + productoId + " no encontrado");
         }
-        return movimientoRepository.findByProductoId(productoId, pageable)
+        if (filtro.desde() != null && filtro.hasta() != null && filtro.desde().isAfter(filtro.hasta())) {
+            throw new PeticionInvalidaException("desde no puede ser posterior a hasta");
+        }
+        return movimientoRepository.findAll(MovimientoSpecs.filtrar(productoId, filtro), pageable)
                 .map(MovimientoResponse::de);
     }
 }

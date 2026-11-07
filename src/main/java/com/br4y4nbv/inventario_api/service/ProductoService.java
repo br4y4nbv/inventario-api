@@ -8,6 +8,8 @@ import com.br4y4nbv.inventario_api.exception.RecursoNoEncontradoException;
 import com.br4y4nbv.inventario_api.model.Producto;
 import com.br4y4nbv.inventario_api.repository.ProductoRepository;
 import com.br4y4nbv.inventario_api.repository.ProductoSpecs;
+import com.br4y4nbv.inventario_api.dto.ProductoFiltro;
+import com.br4y4nbv.inventario_api.exception.PeticionInvalidaException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -46,11 +48,15 @@ public class ProductoService {
     }
 
     @Transactional(readOnly = true)
-    public Page<ProductoResponse> listar(String q, boolean activo, Pageable pageable) {
-        return productoRepository.findAll(ProductoSpecs.filtrar(q, activo), pageable)
+    public Page<ProductoResponse> listar(ProductoFiltro filtro, Pageable pageable) {
+        if (filtro.precioMin() != null && filtro.precioMax() != null
+                && filtro.precioMin().compareTo(filtro.precioMax()) > 0) {
+            throw new PeticionInvalidaException("precioMin no puede ser mayor que precioMax");
+        }
+        return productoRepository.findAll(ProductoSpecs.filtrar(filtro), pageable)
                 .map(ProductoResponse::de);
     }
-
+    
     @Transactional
     public ProductoResponse actualizar(Long id, ProductoActualizacion datos) {
         Producto producto = buscar(id);

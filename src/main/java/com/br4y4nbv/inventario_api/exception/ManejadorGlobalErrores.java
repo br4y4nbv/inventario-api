@@ -71,4 +71,9 @@ public class ManejadorGlobalErrores extends ResponseEntityExceptionHandler {
     ProblemDetail credenciales(BadCredentialsException ex) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, ex.getMessage());
     }
+
+    @ExceptionHandler(PeticionInvalidaException.class)
+    ProblemDetail peticionInvalida(PeticionInvalidaException ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
 }
