@@ -139,3 +139,15 @@ Authorization: Bearer {{tokenUser}}
 ### Desactivar producto (solo ADMIN)
 DELETE {{host}}/api/productos/1
 Authorization: Bearer {{tokenAdmin}}
+
+### Listar con filtros y orden
+GET {{host}}/api/productos?precioMin=50000&precioMax=100000&stockBajo=false&sort=precio&dir=desc
+Authorization: Bearer {{tokenUser}}
+
+### Historial filtrado por tipo y fechas
+GET {{host}}/api/productos/1/movimientos?tipo=SALIDA&desde=2026-11-01&hasta=2026-11-30
+Authorization: Bearer {{tokenUser}}
+
+### Orden no permitido: debe dar 400
+GET {{host}}/api/productos?sort=version
+Authorization: Bearer {{tokenUser}}
