@@ -14,6 +14,8 @@ import com.br4y4nbv.inventario_api.model.Usuario;
 import com.br4y4nbv.inventario_api.repository.UsuarioRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.security.test.context.support.WithMockUser;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -161,5 +163,41 @@ class MovimientoControllerTest {
         // Stock 10 > mínimo 5: ya no aparece
         mockMvc.perform(get("/api/productos/stock-bajo"))
                 .andExpect(jsonPath("$.content[?(@.sku=='LOW-001')]").doesNotExist());
+    }
+
+    @Test
+    void historialFiltraPorTipo() throws Exception {
+        String url = crearProducto("FIL-001");
+        mover(url, "ENTRADA", 10).andExpect(status().isCreated());
+        mover(url, "SALIDA", 4).andExpect(status().isCreated());
+
+        mockMvc.perform(get(url + "/movimientos").param("tipo", "SALIDA"))
+                .andExpect(jsonPath("$.page.totalElements").value(1))
+                .andExpect(jsonPath("$.content[0].tipo").value("SALIDA"));
+    }
+
+    @Test
+    void historialFiltraPorRangoDeFechas() throws Exception {
+        String url = crearProducto("FIL-002");
+        mover(url, "ENTRADA", 10).andExpect(status().isCreated());
+        String hoy = LocalDate.now(ZoneOffset.UTC).toString();
+
+        mockMvc.perform(get(url + "/movimientos").param("desde", hoy).param("hasta", hoy))
+                .andExpect(jsonPath("$.page.totalElements").value(1));
+
+        mockMvc.perform(get(url + "/movimientos").param("desde", "2000-01-01").param("hasta", "2000-01-02"))
+                .andExpect(jsonPath("$.page.totalElements").value(0));
+    }
+
+    @Test
+    void historialConParametrosInvalidosDevuelve400() throws Exception {
+        String url = crearProducto("FIL-003");
+
+        mockMvc.perform(get(url + "/movimientos").param("tipo", "VENTA"))
+                .andExpect(status().isBadRequest());
+        mockMvc.perform(get(url + "/movimientos").param("desde", "2026-12-31").param("hasta", "2026-01-01"))
+                .andExpect(status().isBadRequest());
+        mockMvc.perform(get(url + "/movimientos").param("sort", "id;drop"))
+                .andExpect(status().isBadRequest());
     }
 }

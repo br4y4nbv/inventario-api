@@ -37,6 +37,16 @@ class ProductoControllerTest {
                 .andReturn().getResponse().getHeader("Location");
     }
 
+    private String crearConPrecio(String sku, String nombre, String precio) throws Exception {
+        return mockMvc.perform(post("/api/productos")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"sku":"%s","nombre":"%s","precio":%s,"stockMinimo":5}
+                                """.formatted(sku, nombre, precio)))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getHeader("Location");
+    }
+
     @Test
     void creaProductoConStockCeroYSkuNormalizado() throws Exception {
         mockMvc.perform(post("/api/productos")
@@ -121,5 +131,60 @@ class ProductoControllerTest {
         mockMvc.perform(get(url))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.activo").value(false));
+    }
+
+    @Test
+    void filtraPorRangoDePrecio() throws Exception {
+        crearConPrecio("PRE-001", "Barato", "1000.00");
+        crearConPrecio("PRE-002", "Medio", "5000.00");
+        crearConPrecio("PRE-003", "Caro", "9000.00");
+
+        mockMvc.perform(get("/api/productos").param("precioMin", "2000").param("precioMax", "6000"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.page.totalElements").value(1))
+                .andExpect(jsonPath("$.content[0].sku").value("PRE-002"));
+    }
+
+    @Test
+    void ordenaPorPrecioDescendente() throws Exception {
+        crearConPrecio("ORD-001", "Barato", "1000.00");
+        crearConPrecio("ORD-002", "Medio", "5000.00");
+        crearConPrecio("ORD-003", "Caro", "9000.00");
+
+        mockMvc.perform(get("/api/productos").param("sort", "precio").param("dir", "desc"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].sku").value("ORD-003"))
+                .andExpect(jsonPath("$.content[2].sku").value("ORD-001"));
+    }
+
+    @Test
+    void camposDeOrdenFueraDeLaListaBlancaDevuelven400() throws Exception {
+        mockMvc.perform(get("/api/productos").param("sort", "version"))
+                .andExpect(status().isBadRequest());
+        mockMvc.perform(get("/api/productos").param("sort", "nombre").param("dir", "sideways"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void rangoDePreciosInvertidoDevuelve400() throws Exception {
+        mockMvc.perform(get("/api/productos").param("precioMin", "9000").param("precioMax", "1000"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void filtraPorStockBajo() throws Exception {
+        crear("SBJ-001", "Producto sin stock");   // stock 0 <= mínimo 5
+
+        mockMvc.perform(get("/api/productos").param("stockBajo", "true").param("q", "SBJ-001"))
+                .andExpect(jsonPath("$.page.totalElements").value(1));
+        mockMvc.perform(get("/api/productos").param("stockBajo", "false").param("q", "SBJ-001"))
+                .andExpect(jsonPath("$.page.totalElements").value(0));
+    }
+
+    @Test
+    void elTamanoDePaginaTieneTope() throws Exception {
+        mockMvc.perform(get("/api/productos").param("size", "100000"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.page.size").value(100));
     }
 }
