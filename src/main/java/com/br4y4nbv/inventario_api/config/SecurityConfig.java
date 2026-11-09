@@ -33,6 +33,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/productos/**").hasAnyRole("USER", "ADMIN")
                 .requestMatchers(HttpMethod.POST, "/api/productos/*/movimientos").hasAnyRole("USER", "ADMIN")
                 .requestMatchers("/api/productos/**").hasRole("ADMIN")    // crear, editar y desactivar
+                .requestMatchers(HttpMethod.GET, "/actuator/health", "/actuator/health/**").permitAll()
                 .anyRequest().authenticated())                            // lo demás: denegado por defecto a anónimos
             .oauth2ResourceServer(oauth -> oauth
                 .jwt(jwt -> jwt.jwtAuthenticationConverter(convertidor)));

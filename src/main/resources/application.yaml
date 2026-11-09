@@ -24,3 +24,15 @@ springdoc:
     enabled: ${DOCS_ENABLED:true}
     operations-sorter: method
     tags-sorter: alpha
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health      # solo se expone la salud, nada más
+  endpoint:
+    health:
+      show-details: never    # el estado es público; los detalles internos no
+
+server:
+  shutdown: graceful         # al detenerse, termina las peticiones en curso

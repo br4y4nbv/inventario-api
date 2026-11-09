@@ -1,0 +1,13 @@
+# Se activa con SPRING_PROFILES_ACTIVE=prod. Todo llega por variables de entorno.
+spring:
+  docker:
+    compose:
+      enabled: false          # dentro del contenedor no hay que levantar compose.yaml
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+
+server:
+  port: ${PORT:8080}
+  forward-headers-strategy: framework   # respeta HTTPS cuando hay un proxy delante
