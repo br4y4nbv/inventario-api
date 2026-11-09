@@ -4,6 +4,7 @@ import com.br4y4nbv.inventario_api.dto.MovimientoFiltro;
 import com.br4y4nbv.inventario_api.dto.MovimientoRequest;
 import com.br4y4nbv.inventario_api.dto.MovimientoResponse;
 import com.br4y4nbv.inventario_api.model.TipoMovimiento;
+import com.br4y4nbv.inventario_api.service.MovimientoReintentos;
 import com.br4y4nbv.inventario_api.service.MovimientoService;
 import com.br4y4nbv.inventario_api.util.Paginacion;
 import io.swagger.v3.oas.annotations.Operation;
@@ -29,6 +30,8 @@ public class MovimientoController {
 
     private static final Set<String> CAMPOS_ORDEN = Set.of("fecha", "cantidad", "tipo");
 
+    private final MovimientoReintentos movimientoReintentos;
+
     private final MovimientoService movimientoService;
 
     @PostMapping
@@ -40,7 +43,7 @@ public class MovimientoController {
     @ApiResponse(responseCode = "409", description = "Stock insuficiente, producto inactivo o conflicto de concurrencia")
     public MovimientoResponse registrar(@PathVariable Long productoId,
                                         @Valid @RequestBody MovimientoRequest request) {
-        return movimientoService.registrar(productoId, request);
+        return movimientoReintentos.registrar(productoId, request);
     }
 
     @GetMapping
