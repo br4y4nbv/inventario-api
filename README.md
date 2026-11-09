@@ -21,6 +21,18 @@ Para probar los endpoints protegidos: inicia sesión en `POST /api/auth/login`, 
 Listados: todos aceptan `page`, `size` (máximo 100), `sort` y `dir`. Ordenar por un campo
 no permitido devuelve 400.
 
+## Pruebas
+
+```bash
+./mvnw verify
+```
+
+- **Unitarias** (Mockito, sin base de datos): reglas de negocio de los servicios y lógica de reintentos.
+- **Integración** (Testcontainers con PostgreSQL real): migraciones, API, seguridad con tokens reales y concurrencia.
+- **Cobertura**: informe en `target/site/jacoco/index.html`; el build falla si la cobertura de líneas baja del 75 %.
+
+Requiere Docker en ejecución para las pruebas de integración.
+
 ## Estado
 
 En desarrollo.
