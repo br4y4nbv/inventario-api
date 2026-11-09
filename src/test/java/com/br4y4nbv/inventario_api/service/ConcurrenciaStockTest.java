@@ -34,7 +34,7 @@ class ConcurrenciaStockTest {
 
     private static final int HILOS = 8;   // menos que las 10 conexiones del pool por defecto
 
-    @Autowired MovimientoService movimientoService;
+    @Autowired MovimientoReintentos movimientoReintentos;
     @Autowired ProductoRepository productoRepository;
     @Autowired MovimientoRepository movimientoRepository;
     @Autowired UsuarioRepository usuarioRepository;
@@ -75,8 +75,8 @@ class ConcurrenciaStockTest {
                 SecurityContextHolder.getContext().setAuthentication(
                         new TestingAuthenticationToken(EMAIL, null, "ROLE_ADMIN"));                
                         try {
-                    movimientoService.registrar(productoId,
-                            new MovimientoRequest(TipoMovimiento.SALIDA, 1, "venta"));
+                    movimientoReintentos.registrar(productoId,
+                        new MovimientoRequest(TipoMovimiento.SALIDA, 1, "venta"));
                     return true;
                 } catch (ConflictoException | OptimisticLockingFailureException e) {
                     return false;
