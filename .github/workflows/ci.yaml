@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: maven
+
+      # Windows no conserva el permiso de ejecución de mvnw
+      - run: chmod +x mvnw
+
+      # Pruebas unitarias y de integración (Testcontainers usa el Docker del runner)
+      # y comprobación del umbral de cobertura
+      - run: ./mvnw -B verify
+
+      # Se sube el informe incluso si las pruebas fallan, para poder revisarlo
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: informe-jacoco
+          path: target/site/jacoco
+
+      # Verifica que el Dockerfile construye la imagen correctamente
+      - run: docker build -t inventario-api:ci .
