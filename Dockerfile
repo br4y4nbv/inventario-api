@@ -1,5 +1,5 @@
 # ---------- Etapa 1: compilar ----------
-FROM eclipse-temurin:21-jdk AS build
+FROM eclipse-temurin:25-jdk AS build
 WORKDIR /app
 
 # Primero solo las dependencias: Docker guarda esta capa en caché y no las vuelve a descargar mientras el pom.xml no cambie.
@@ -13,7 +13,7 @@ RUN ./mvnw package -DskipTests -Djacoco.skip=true -B
 
 # ---------- Etapa 2: ejecutar ----------
 # Solo el JRE: imagen más ligera y sin herramientas de compilación
-FROM eclipse-temurin:21-jre
+FROM eclipse-temurin:25-jre
 WORKDIR /app
 
 # curl solo para el healthcheck; el usuario sin privilegios limita el daño si alguien vulnera la app
