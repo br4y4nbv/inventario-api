@@ -25,7 +25,7 @@ jobs:
       - run: ./mvnw -B verify
 
       # Se sube el informe incluso si las pruebas fallan, para poder revisarlo
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: informe-jacoco
